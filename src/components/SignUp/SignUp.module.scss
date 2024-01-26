@@ -1,0 +1,75 @@
+.sign_up {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  max-height: 100%;
+  margin-top: 20px;
+
+  span {
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    margin-bottom: 15px;
+  }
+
+  form {
+    max-width: fit-content;
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    background-color: #fff;
+    padding: 48px 32px;
+    min-width: 375px;
+    margin-bottom: 30px;
+    & > span {
+      text-align: center;
+    }
+    .checkbox {
+      span {
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      flex-direction: row;
+    }
+    input {
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+      background-color: #fff;
+      padding: 8px 12px;
+      &.not_valid {
+        border: 1px solid #f5222d;
+      }
+    }
+    input[type='submit'] {
+      background-color: #1890ff;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 16px;
+      height: 40px;
+      margin-bottom: 10px;
+      &:disabled {
+        background-color: #8ea0b0;
+      }
+    }
+    input:focus {
+      outline: none;
+    }
+
+    & > label {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+  }
+
+  .errors {
+    font-size: 14px;
+    color: #f5222d;
+    margin-top: 3px;
+  }
+}
