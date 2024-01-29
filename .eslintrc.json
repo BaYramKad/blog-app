@@ -73,6 +73,7 @@
     "no-unused-vars": "off",
     "camelcase": "off",
     "no-useless-escape": "off",
-    "no-debugger": "off"
+    "no-debugger": "off",
+    "react-hooks/rules-of-hooks": "off"
   }
 }

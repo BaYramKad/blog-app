@@ -3,7 +3,7 @@ import styles from './Article.module.scss';
 import { Article } from '../Article';
 import { withRouter } from 'react-router-dom';
 
-const Articles = ({ history, aticles }) => {
+const Articles = ({ history, aticles, onFavoriteArticle }) => {
   return (
     <div className={styles.articles_list}>
       <ul>
@@ -12,9 +12,10 @@ const Articles = ({ history, aticles }) => {
             <Article
               key={art.slug}
               {...art}
-              onArticleHandle={(id) => {
-                history.push(`/articles/${id}`);
+              onArticleHandle={(slug) => {
+                history.push(`/articles/${slug}`);
               }}
+              onFavoriteArticle={onFavoriteArticle}
             />
           );
         })}

@@ -2,8 +2,14 @@ export class ArticlesApi {
   baseURL = 'https://blog.kata.academy/api/';
   getAllArticles = async (page) => {
     const url = new URL(`${this.baseURL}articles`);
-    url.searchParams.append('limit', 10);
     url.searchParams.append('offset', page);
+    url.searchParams.append('limit', 10);
+    const response = await fetch(url);
+    const data = await response.json();
+    return data;
+  };
+  getAnArticle = async (slug) => {
+    const url = new URL(`${this.baseURL}articles/${slug}`);
     const response = await fetch(url);
     const data = await response.json();
     return data;
@@ -82,6 +88,91 @@ export class ArticlesApi {
     if (data.errors) {
       this.errorCheck(data);
     }
+    return data;
+  };
+
+  createAnArticle = async (dataUser, dataCreateArticle) => {
+    const url = new URL(`${this.baseURL}articles`);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${dataUser.user.token}`,
+      },
+      body: JSON.stringify({ article: dataCreateArticle }),
+    });
+    const data = await response.json();
+    if (data.errors) {
+      this.errorCheck(data);
+    }
+    return data;
+  };
+
+  deleteAnArticle = async (slug, dataUser) => {
+    const url = new URL(`${this.baseURL}articles/${slug}`);
+    await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${dataUser.user.token}`,
+      },
+    });
+  };
+  updateAnArticleForFavorite = async (slug, token, favoriteArticle) => {
+    const url = new URL(`${this.baseURL}articles/${slug}`);
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ article: { ...favoriteArticle.article } }),
+    });
+    const data = await response.json();
+    return data;
+  };
+  updateAnArticle = async (dataUser, dataCreateArticle, slug) => {
+    const url = new URL(`${this.baseURL}articles/${slug}`);
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${dataUser.user.token}`,
+      },
+      body: JSON.stringify({ article: dataCreateArticle }),
+    });
+    const data = await response.json();
+    if (data.errors) {
+      this.errorCheck(data);
+    }
+    return data;
+  };
+
+  favoriteAnArticle = async (slug, token) => {
+    const url = new URL(`${this.baseURL}articles/${slug}/favorite`);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+
+    return data;
+  };
+  unFavoriteAnArticle = async (slug, token) => {
+    const url = new URL(`${this.baseURL}articles/${slug}/favorite`);
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+
     return data;
   };
 }

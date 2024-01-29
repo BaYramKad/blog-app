@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 
+import { Route, useRouteMatch, useHistory } from 'react-router-dom';
 import { Header } from './components/Header';
-import Articles from './components/Articles';
+
 import { ArticlesApi } from './api/articlesApi';
 
-import { Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 import { PaginationBlock } from './components/Pagination';
-
-import { Route, useRouteMatch, useHistory } from 'react-router-dom';
 import { ArticleDitails } from './components/ArticleDitails';
+import { CreateArticle } from './components/CreateArticle';
+import { Spinner } from './assets/Spinner';
+
 import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 import EditProfile from './components/EditProfile';
+import Articles from './components/Articles';
 
 const api = new ArticlesApi();
 
@@ -23,6 +24,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState({});
+  const [editedArticle, setEditedArtile] = useState(false);
 
   const routeMath = useRouteMatch('/articles/:id');
   const routeMathArticles = useRouteMatch('/articles/');
@@ -55,14 +57,63 @@ const App = () => {
     });
   }, [page]);
 
+  const chengeArticles = (response) => {
+    return atricles.map((item) => {
+      if (response.article.slug === item.slug) {
+        return {
+          ...item,
+          favorited: response.article.favorited,
+          favoritesCount: response.article.favoritesCount,
+        };
+      } else {
+        return item;
+      }
+    });
+  };
+
+  const onFavoriteArticle = (favorited, slug) => {
+    const token = localStorage.getItem('token');
+    if (favorited) {
+      api.updateAnArticleForFavorite(slug, token).then((res) => {
+        const favArticle = chengeArticles(res);
+        setArticles(favArticle);
+        const res2 = { ...res };
+        api.updateAnArticleForFavorite(slug, token, res2);
+      });
+    } else {
+      api.favoriteAnArticle(slug, token).then((res) => {
+        const favArticle = chengeArticles(res);
+        setArticles(favArticle);
+        const res2 = { ...res };
+        api.updateAnArticleForFavorite(slug, token, res2);
+      });
+    }
+  };
+
   const onSetNewUserData = (data) => setUserData(data);
 
-  const spinner = (
-    <div className="atricle-spin">
-      <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
-    </div>
+  const articlesReady = loading ? (
+    <Spinner />
+  ) : (
+    <Articles aticles={atricles} onFavoriteArticle={onFavoriteArticle} />
   );
-  const articlesReady = loading ? spinner : <Articles aticles={atricles} />;
+
+  const setNewArticle = (newArticle) => {
+    const obj = newArticle.article;
+    setArticles((prev) => {
+      return [...prev, obj];
+    });
+  };
+
+  const deleteArticle = (slug) => {
+    const deleteFilterArticle = atricles.filter((item) => item.slug !== slug);
+    setArticles(deleteFilterArticle);
+  };
+
+  const onEditArticle = (slug) => {
+    setEditedArtile(true);
+    history.push(`/articles/${slug}/edit`);
+  };
 
   return (
     <div className="app">
@@ -80,7 +131,17 @@ const App = () => {
       />
       <Route
         path="/articles/:id"
-        render={() => <ArticleDitails id={routeMath?.params.id} articleDitales={articlesReady} />}
+        exact
+        render={() => (
+          <ArticleDitails
+            userData={userData}
+            id={routeMath?.params.id}
+            articleDitales={atricles}
+            deleteArticle={deleteArticle}
+            onEditArticle={onEditArticle}
+            onFavoriteArticle={onFavoriteArticle}
+          />
+        )}
       />
       <Route path="/sign-up" render={() => <SignUp />} />
       <Route
@@ -95,6 +156,20 @@ const App = () => {
       <Route
         path="/profile"
         render={() => <EditProfile dataUserUpdate={userData} onSetNewUserData={onSetNewUserData} />}
+      />
+      <Route
+        path="/new-article"
+        render={() => <CreateArticle setNewArticle={setNewArticle} userData={userData} />}
+      />
+      <Route
+        path="/articles/:id/edit"
+        render={() => (
+          <CreateArticle
+            editedArticle={editedArticle}
+            setNewArticle={setNewArticle}
+            userData={userData}
+          />
+        )}
       />
 
       {(routeMathArticles?.isExact || routeMathMain?.isExact) && !loading && (

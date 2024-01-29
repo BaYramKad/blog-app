@@ -1,15 +1,35 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import styles from './CreateArticle.module.scss';
-import { Checkbox } from 'antd';
-import { NavLink, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { ArticlesApi } from '../../api/articlesApi';
+import { Button } from 'antd';
 
+import { useRouteMatch } from 'react-router-dom';
 const apiUser = new ArticlesApi();
 
-export const SignUp = () => {
+export const CreateArticle = ({ userData, setNewArticle, editedArticle }) => {
+  const routeMath = useRouteMatch('/articles/:id');
+  const [isEdit, setIsEdit] = useState(false);
+  const [addedInput, setAddedInput] = useState([0]);
+  const [inputValue, setInputValue] = useState({});
+
+  const [oldArticle, setOldArticle] = useState({});
+
+  const count = useRef(0);
   const history = useHistory();
+  useEffect(() => {
+    if (!editedArticle && !routeMath) return;
+    apiUser.getAnArticle(routeMath.params.id).then((res) => {
+      setOldArticle(res.article);
+      setIsEdit(true);
+      res.article.tagList.forEach((_, i) => {
+        setAddedInput((prev) => [...prev, ++i]);
+      });
+      count.current = res.article.tagList.length;
+    });
+  }, []);
   const {
     register,
     formState: { errors, isValid },
@@ -20,136 +40,154 @@ export const SignUp = () => {
   });
 
   const onHandleSubmit = (data) => {
-    if (data.password === data.repeatPassword) {
-      const { username, email, password } = data;
-      const requestData = {
-        username,
-        email,
-        password,
-      };
+    const requestData = {
+      ...data,
+      tagList: Object.values(inputValue),
+    };
+
+    if (!editedArticle) {
       apiUser
-        .registerUser(requestData)
+        .createAnArticle(userData, requestData)
         .then((res) => {
-          history.push('/sign-in/');
+          setNewArticle(res);
+          history.push('/articles/');
         })
         .catch((err) => {
-          if (err.message.includes('email')) {
-            setError('email', {
-              type: 'email',
-              message: 'Такой Email уже существует',
-            });
-          }
-          if (err.message.includes('username')) {
-            setError('username', {
-              type: 'username',
-              message: 'Пользователь с таким username уже существует',
-            });
-          }
+          setError('title', {
+            type: 'title',
+            message: err.message,
+          });
         });
     } else {
-      setError('repeatPassword', {
-        type: 'password',
-        message: 'Passwords must match',
-      });
+      apiUser
+        .updateAnArticle(userData, requestData, routeMath.params.id)
+        .then((res) => {
+          setNewArticle(res);
+          history.push('/articles/');
+        })
+        .catch((err) => {
+          setError('title', {
+            type: 'title',
+            message: err.message,
+          });
+        });
     }
+  };
+  const handleAdd = () => {
+    count.current++;
+    setAddedInput((prev) => [...prev, count.current]);
+  };
+
+  const onDeleteTag = (id) => {
+    const deleteTagFilter = addedInput.filter((item) => item !== id);
+    setAddedInput(deleteTagFilter);
+    delete inputValue[id];
+  };
+
+  const handleChange = (event) => {
+    const value = event.target.value;
+    const id = event.target.getAttribute('id');
+
+    setInputValue((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
   };
 
   return (
-    <div className={styles.sign_up}>
+    <div className={styles.new_article}>
       <form onSubmit={handleSubmit(onHandleSubmit)}>
-        <span>Create new account</span>
-        <label htmlFor="username">
-          Username
+        <span>{isEdit ? 'Edit article' : 'Create new articlet'} </span>
+        <label htmlFor="title">
+          Title
           <input
-            id="username"
-            placeholder="Username"
-            className={!isValid && errors?.username?.message && styles.not_valid}
-            {...register('username', {
+            id="title"
+            placeholder="Title"
+            defaultValue={isEdit ? oldArticle.title : ''}
+            className={(!isValid && errors?.title?.message && styles.not_valid) || ''}
+            {...register('title', {
               required: 'Поле обязательно к заполнению',
-              minLength: {
-                value: 3,
-                message: 'Минимум 3 символа',
-              },
-              maxLength: {
-                value: 20,
-                message: 'Максимум 20 символов',
-              },
             })}
           />
         </label>
-        <div className={styles.errors}>
-          {errors?.username && <p>{errors?.username?.message || 'This is a required field'}</p>}
-        </div>
+        <div className={styles.errors}>{errors?.title && <p>{errors?.title?.message}</p>}</div>
 
-        <label htmlFor="email">
-          Email
+        <label htmlFor="description">
+          Short description
           <input
-            id="email"
-            type="email"
-            placeholder="Email"
-            className={!isValid && errors?.email?.message && styles.not_valid}
-            {...register('email', {
-              required: 'Поле обязательно к заполнению',
-              pattern:
-                /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/iu,
-            })}
-          />
-        </label>
-        <div className={styles.errors}>
-          {errors?.email && <p>{errors?.email?.message || 'Не верный формат Email'}</p>}
-        </div>
-
-        <label htmlFor="password">
-          Password
-          <input
-            id="password"
-            type="password"
-            placeholder="password"
-            className={!isValid && errors?.password?.message && styles.not_valid}
-            {...register('password', {
-              required: 'Поле обязательно к заполнению',
-              minLength: {
-                value: 6,
-                message: 'Минимум 6 символов',
-              },
-              maxLength: {
-                value: 40,
-                message: 'Максимум 20 символов',
-              },
-            })}
-          />
-        </label>
-        <div className={styles.errors}>
-          {errors?.password && <p>{errors?.password?.message}</p>}
-        </div>
-
-        <label htmlFor="repeatPassword">
-          Repeat password
-          <input
-            id="repeatPassword"
-            placeholder="Password"
-            type="password"
-            className={!isValid && errors?.repeatPassword?.message && styles.not_valid}
-            {...register('repeatPassword', {
+            id="description"
+            defaultValue={isEdit ? oldArticle.description : ''}
+            type="text"
+            placeholder="Title"
+            className={(!isValid && errors?.description?.message && styles.not_valid) || ''}
+            {...register('description', {
               required: 'Поле обязательно к заполнению',
             })}
           />
         </label>
         <div className={styles.errors}>
-          {errors?.repeatPassword && <p>{errors?.repeatPassword?.message}</p>}
+          {errors?.description && <p>{errors?.description?.message}</p>}
         </div>
 
-        <div>
-          <Checkbox checked className={styles.checkbox}>
-            I agree to the processing of my personal information
-          </Checkbox>
-        </div>
+        <label htmlFor="body">
+          Text
+          <textarea
+            id="body"
+            type="text"
+            placeholder="Text"
+            defaultValue={isEdit ? oldArticle.body : ''}
+            className={(!isValid && errors?.body?.message && styles.not_valid) || ''}
+            {...register('body', {
+              required: 'Поле обязательно к заполнению',
+            })}
+            style={{ minHeight: 168 }}
+          />
+        </label>
+        <div className={styles.errors}>{errors?.body && <p>{errors?.body?.message}</p>}</div>
 
-        <input value="Create" type="submit" disabled={!isValid} />
+        <label htmlFor="tags">
+          Tags
+          <div className={styles.tags}>
+            <div className={styles.added_elements}>
+              {addedInput.map((inputCount, i) => {
+                const addButton =
+                  addedInput[addedInput.length - 1] === inputCount ? (
+                    <Button onClick={handleAdd} className={styles.tags_button_add}>
+                      Add Tag
+                    </Button>
+                  ) : null;
 
-        <p>
-          Already have an account? <NavLink to="/sign-in">Sign In</NavLink>{' '}
-        </p>
+                const checkIsShow = addedInput.length === 1 ? null : addButton;
+                const deleteButton =
+                  addedInput.length > 1 || checkIsShow ? (
+                    <Button onClick={() => onDeleteTag(inputCount)} danger>
+                      Delete
+                    </Button>
+                  ) : null;
+
+                const oldinputValue =
+                  isEdit && oldArticle && oldArticle.tagList[inputCount]
+                    ? oldArticle.tagList[inputCount]
+                    : '';
+                return (
+                  <div key={inputCount}>
+                    <input
+                      defaultValue={oldinputValue}
+                      onChange={handleChange}
+                      id={inputCount}
+                      type="text"
+                      placeholder="Tag"
+                    />
+                    {deleteButton}
+                    {addButton}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </label>
+
+        <input className={styles.input_submit} value="Send" type="submit" disabled={!isValid} />
       </form>
     </div>
   );

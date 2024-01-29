@@ -18,7 +18,7 @@ export const LoginUserHeader = ({ userData = {}, onLogOut }) => {
   const imgUrl = !userData.user?.image ? avatarDefault : userData.user?.image;
   return (
     <div className={styles.auth_buttons}>
-      <Link className={styles.create_article} to="/create-article">
+      <Link className={styles.create_article} to="/new-article">
         <Button type="text">Create article</Button>
       </Link>
 

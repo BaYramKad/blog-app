@@ -1,43 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styles from './ArticaleDitales.module.scss';
 import like from '../../assets/images/like.svg';
+import unlike from '../../assets/images/unlike.svg';
 import Markdown from 'react-markdown';
 import { AuthorComponent } from '../AuthorComponent';
+import { Buttons } from '../Buttons';
+import { Spinner } from '../../assets/Spinner';
+import { ArticlesApi } from '../../api/articlesApi';
+import { useHistory } from 'react-router-dom';
 
-export const ArticleDitails = ({ id, articleDitales }) => {
-  if (!articleDitales.props.aticles?.length) return '...';
-  const article = articleDitales.props.aticles.find((item) => item.slug === id);
+const api = new ArticlesApi();
 
-  const {
-    title,
-    favoritesCount,
-    createdAt,
-    body,
-    author: { username, image },
-    tagList,
-  } = article;
+export const ArticleDitails = ({ id, deleteArticle, onEditArticle, onFavoriteArticle }) => {
+  const [article, setCurrentArticle] = useState({});
+  const [userData, setUserData] = useState({});
+  const history = useHistory();
 
-  let idKey = [...tagList].length;
-  const tags = tagList
+  const token = localStorage.getItem('token');
+
+  const [loading, setIsLoading] = useState(true);
+  useEffect(() => {
+    setIsLoading(true);
+    Promise.all([api.getAnArticle(id), api.checkIsLoggedInUser(token)]).then((res) => {
+      const article = res.find((item) => item['article']);
+      const user = res.find((item) => item['user']);
+      setCurrentArticle(article.article);
+      setUserData(user);
+      setIsLoading(false);
+    });
+  }, [id]);
+  if (loading) return <Spinner />;
+
+  let idKey = [...article.tagList].length;
+  const tags = article.tagList
     .filter((item, i) => item.length && i < 10)
     .map((item) => <span key={idKey--}>{item}</span>);
+
+  const onFavorite = () => {
+    if (userData?.user?.username) {
+      onFavoriteArticle(article.favorited, article.slug);
+    } else {
+      history.push('/sign-up');
+    }
+  };
   return (
     <article className={styles.article}>
       <div className={styles.article_info}>
         <div>
-          <h3>{title}</h3>
-          <div>
-            <img src={like} />
-            <span>{favoritesCount}</span>
+          <h3>{article.title}</h3>
+          <div onClick={onFavorite}>
+            <img src={article.favorite ? like : unlike} />
+            <span>{article.favoritesCount}</span>
           </div>
+
           <div className={styles.article_full_tags}>{tags}</div>
         </div>
-        <AuthorComponent createdAt={createdAt} username={username} image={image} />
+        <AuthorComponent
+          createdAt={article.createdAt}
+          username={article.author.username}
+          image={article.author.image}
+        />
+        {article.author.username === userData?.user?.username ? (
+          <Buttons
+            onEditArticle={onEditArticle}
+            deleteArticle={deleteArticle}
+            userData={userData}
+            slug={article.slug}
+          />
+        ) : null}
       </div>
-      <p className={styles.article_body}>
-        <Markdown>{body}</Markdown>
-      </p>
+      <div className={styles.article_body}>
+        <Markdown>{article.body}</Markdown>
+      </div>
     </article>
   );
 };

@@ -13,6 +13,9 @@
     margin-bottom: 15px;
     .article_title_info {
       position: relative;
+      .favorite_btn {
+        cursor: pointer;
+      }
       .article_tags {
         position: absolute;
         max-width: 100%;

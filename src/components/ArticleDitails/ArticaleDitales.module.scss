@@ -10,11 +10,26 @@
   .article_body {
     margin-top: 20px;
   }
+
   .article_info {
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
     position: relative;
+
+    .edit_article_btns {
+      position: absolute;
+      right: 0;
+      top: 4em;
+      & > button:first-child {
+        margin-right: 10px;
+      }
+      & > button:last-child {
+        border: 1px solid #52c41a;
+        color: #52c41a;
+      }
+    }
+
     .article_full_tags {
       position: absolute;
       top: 45px;
