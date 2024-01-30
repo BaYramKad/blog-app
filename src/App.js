@@ -19,7 +19,7 @@ const api = new ArticlesApi();
 
 const App = () => {
   const [atricles, setArticles] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [articlesCount, setArticlesCount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -64,7 +64,6 @@ const App = () => {
   };
 
   const onFavoriteArticle = (favorited, slug) => {
-    const token = localStorage.getItem('token');
     if (favorited) {
       api.unFavoriteAnArticle(slug).then((res) => {
         const favArticle = chengeArticles(res);
@@ -73,7 +72,7 @@ const App = () => {
         api.updateAnArticleForFavorite(slug, res2);
       });
     } else {
-      api.favoriteAnArticle(slug, token).then((res) => {
+      api.favoriteAnArticle(slug).then((res) => {
         const favArticle = chengeArticles(res);
         setArticles(favArticle);
         const res2 = { ...res };

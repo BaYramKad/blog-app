@@ -44,7 +44,6 @@ export const CreateArticle = ({ setNewArticle, editedArticle }) => {
       ...data,
       tagList: Object.values(inputValue),
     };
-
     if (!editedArticle) {
       apiUser
         .createAnArticle(requestData)

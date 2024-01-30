@@ -79,7 +79,7 @@ export class ArticlesApi {
     return data;
   };
 
-  updateCurrentUser = async (dataUserUpdate, requestData) => {
+  updateCurrentUser = async (requestData) => {
     const url = new URL(`${this.baseURL}user`);
     const token = getToken();
     const response = await fetch(url, {
@@ -97,7 +97,7 @@ export class ArticlesApi {
     return data;
   };
 
-  createAnArticle = async (dataUser, dataCreateArticle) => {
+  createAnArticle = async (dataCreateArticle) => {
     const url = new URL(`${this.baseURL}articles`);
     const token = getToken();
     const response = await fetch(url, {
@@ -109,6 +109,7 @@ export class ArticlesApi {
       body: JSON.stringify({ article: dataCreateArticle }),
     });
     const data = await response.json();
+
     if (data.errors) {
       this.errorCheck(data);
     }
@@ -158,7 +159,7 @@ export class ArticlesApi {
     return data;
   };
 
-  favoriteAnArticle = async (slug, tokekn) => {
+  favoriteAnArticle = async (slug) => {
     const url = new URL(`${this.baseURL}articles/${slug}/favorite`);
     const token = getToken();
     const response = await fetch(url, {
@@ -172,7 +173,7 @@ export class ArticlesApi {
 
     return data;
   };
-  unFavoriteAnArticle = async (slug, tokens) => {
+  unFavoriteAnArticle = async (slug) => {
     const url = new URL(`${this.baseURL}articles/${slug}/favorite`);
     const token = getToken();
 

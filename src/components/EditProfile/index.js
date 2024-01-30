@@ -27,7 +27,7 @@ const EditProfile = ({ dataUserUpdate, onSetNewUserData }) => {
       image: avatar,
     };
     apiUser
-      .updateCurrentUser(dataUserUpdate, requestData)
+      .updateCurrentUser(requestData)
       .then((res) => {
         onSetNewUserData(res);
         history.push('/articles/');
@@ -58,7 +58,7 @@ const EditProfile = ({ dataUserUpdate, onSetNewUserData }) => {
             id="username"
             placeholder="Username"
             defaultValue={dataUserUpdate?.user?.username}
-            className={!isValid && errors?.username?.message && styles.not_valid}
+            className={(!isValid && errors?.username?.message && styles.not_valid) || ''}
             {...register('username', {
               required: 'Поле обязательно к заполнению',
               minLength: {
@@ -83,7 +83,7 @@ const EditProfile = ({ dataUserUpdate, onSetNewUserData }) => {
             type="email"
             defaultValue={dataUserUpdate?.user?.email}
             placeholder="john@example.com"
-            className={!isValid && errors?.email?.message && styles.not_valid}
+            className={(!isValid && errors?.email?.message && styles.not_valid) || ''}
             {...register('email', {
               required: 'Поле обязательно к заполнению',
               pattern:
@@ -101,7 +101,7 @@ const EditProfile = ({ dataUserUpdate, onSetNewUserData }) => {
             id="password"
             type="password"
             placeholder="password"
-            className={!isValid && errors?.password?.message && styles.not_valid}
+            className={(!isValid && errors?.password?.message && styles.not_valid) || ''}
             {...register('password', {
               required: 'Поле обязательно к заполнению',
               minLength: {
@@ -125,7 +125,7 @@ const EditProfile = ({ dataUserUpdate, onSetNewUserData }) => {
             id="avatar"
             type="url"
             placeholder="Avatar image"
-            className={!isValid && errors?.avatar?.message && styles.not_valid}
+            className={(!isValid && errors?.avatar?.message && styles.not_valid) || ''}
             {...register('avatar', {
               pattern: {
                 value:

@@ -55,13 +55,14 @@ export const ArticleDitails = ({
       history.push('/sign-up');
     }
   };
+
   return (
     <article className={styles.article}>
       <div className={styles.article_info}>
         <div>
           <h3>{article.title}</h3>
           <div onClick={onFavorite}>
-            <img src={article.favorite ? like : unlike} />
+            <img src={article.favorited ? like : unlike} />
             <span>{article.favoritesCount}</span>
           </div>
 

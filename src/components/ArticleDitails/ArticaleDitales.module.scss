@@ -7,8 +7,13 @@
   margin-top: 26px;
   background-color: #fff;
   padding: 20px;
+
   .article_body {
     margin-top: 20px;
+    max-width: 100%;
+    p {
+      display: block;
+    }
   }
 
   .article_info {
