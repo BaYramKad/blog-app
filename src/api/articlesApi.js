@@ -1,3 +1,5 @@
+import { getToken, setToken } from './api';
+
 export class ArticlesApi {
   baseURL = 'https://blog.kata.academy/api/';
   getAllArticles = async (page) => {
@@ -6,12 +8,14 @@ export class ArticlesApi {
     url.searchParams.append('limit', 10);
     const response = await fetch(url);
     const data = await response.json();
+
     return data;
   };
   getAnArticle = async (slug) => {
     const url = new URL(`${this.baseURL}articles/${slug}`);
     const response = await fetch(url);
     const data = await response.json();
+
     return data;
   };
 
@@ -25,7 +29,6 @@ export class ArticlesApi {
       body: JSON.stringify({ user: userObj }),
     });
     const data = await response.json();
-    console.log('data: ', data);
     if (data.errors) {
       const key = Object.entries(data.errors)[0][0];
       const value = Object.entries(data.errors)[0][1];
@@ -46,9 +49,11 @@ export class ArticlesApi {
       body: JSON.stringify({ user: userObj }),
     });
     const data = await response.json();
+
     if (data.errors) {
       this.errorCheck(data);
     }
+    setToken(data.user.token);
     return data;
   };
 
@@ -60,8 +65,9 @@ export class ArticlesApi {
     }
   };
 
-  checkIsLoggedInUser = async (token) => {
+  checkIsLoggedInUser = async () => {
     const url = new URL(`${this.baseURL}user`);
+    const token = getToken();
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -75,12 +81,12 @@ export class ArticlesApi {
 
   updateCurrentUser = async (dataUserUpdate, requestData) => {
     const url = new URL(`${this.baseURL}user`);
-
+    const token = getToken();
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${dataUserUpdate.user.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ user: requestData }),
     });
@@ -93,11 +99,12 @@ export class ArticlesApi {
 
   createAnArticle = async (dataUser, dataCreateArticle) => {
     const url = new URL(`${this.baseURL}articles`);
+    const token = getToken();
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${dataUser.user.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ article: dataCreateArticle }),
     });
@@ -108,37 +115,39 @@ export class ArticlesApi {
     return data;
   };
 
-  deleteAnArticle = async (slug, dataUser) => {
+  deleteAnArticle = async (slug) => {
     const url = new URL(`${this.baseURL}articles/${slug}`);
+    const token = getToken();
     await fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${dataUser.user.token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
   };
-  updateAnArticleForFavorite = async (slug, token, favoriteArticle) => {
+  updateAnArticleForFavorite = async (slug, favoriteArticle) => {
     const url = new URL(`${this.baseURL}articles/${slug}`);
-
+    const token = getToken();
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ article: { ...favoriteArticle.article } }),
+      body: JSON.stringify({ article: favoriteArticle.article }),
     });
     const data = await response.json();
     return data;
   };
-  updateAnArticle = async (dataUser, dataCreateArticle, slug) => {
+  updateAnArticle = async (dataCreateArticle, slug) => {
     const url = new URL(`${this.baseURL}articles/${slug}`);
+    const token = getToken();
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${dataUser.user.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ article: dataCreateArticle }),
     });
@@ -149,8 +158,9 @@ export class ArticlesApi {
     return data;
   };
 
-  favoriteAnArticle = async (slug, token) => {
+  favoriteAnArticle = async (slug, tokekn) => {
     const url = new URL(`${this.baseURL}articles/${slug}/favorite`);
+    const token = getToken();
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -162,8 +172,10 @@ export class ArticlesApi {
 
     return data;
   };
-  unFavoriteAnArticle = async (slug, token) => {
+  unFavoriteAnArticle = async (slug, tokens) => {
     const url = new URL(`${this.baseURL}articles/${slug}/favorite`);
+    const token = getToken();
+
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {

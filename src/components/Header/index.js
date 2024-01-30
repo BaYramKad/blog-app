@@ -3,8 +3,10 @@ import styles from './Header.module.scss';
 import { Button } from 'antd';
 import { Link, NavLink } from 'react-router-dom';
 import { LoginUserHeader } from '../LogInUserHeader';
+import { getToken } from '../../api/api';
 
 export function Header({ isLoggedIn, userData, onLogOutUser }) {
+  const isAuth = getToken();
   return (
     <div className={styles.header}>
       <div className={styles.logo}>
@@ -13,7 +15,7 @@ export function Header({ isLoggedIn, userData, onLogOutUser }) {
         </NavLink>
       </div>
 
-      {isLoggedIn ? (
+      {isAuth ? (
         <LoginUserHeader userData={userData} onLogOut={onLogOutUser} />
       ) : (
         <div className={styles.auth_buttons}>

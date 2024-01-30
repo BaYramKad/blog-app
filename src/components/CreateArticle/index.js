@@ -9,7 +9,7 @@ import { Button } from 'antd';
 import { useRouteMatch } from 'react-router-dom';
 const apiUser = new ArticlesApi();
 
-export const CreateArticle = ({ userData, setNewArticle, editedArticle }) => {
+export const CreateArticle = ({ setNewArticle, editedArticle }) => {
   const routeMath = useRouteMatch('/articles/:id');
   const [isEdit, setIsEdit] = useState(false);
   const [addedInput, setAddedInput] = useState([0]);
@@ -47,7 +47,7 @@ export const CreateArticle = ({ userData, setNewArticle, editedArticle }) => {
 
     if (!editedArticle) {
       apiUser
-        .createAnArticle(userData, requestData)
+        .createAnArticle(requestData)
         .then((res) => {
           setNewArticle(res);
           history.push('/articles/');
@@ -60,7 +60,7 @@ export const CreateArticle = ({ userData, setNewArticle, editedArticle }) => {
         });
     } else {
       apiUser
-        .updateAnArticle(userData, requestData, routeMath.params.id)
+        .updateAnArticle(requestData, routeMath.params.id)
         .then((res) => {
           setNewArticle(res);
           history.push('/articles/');

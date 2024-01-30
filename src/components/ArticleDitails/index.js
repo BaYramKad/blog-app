@@ -12,23 +12,34 @@ import { useHistory } from 'react-router-dom';
 
 const api = new ArticlesApi();
 
-export const ArticleDitails = ({ id, deleteArticle, onEditArticle, onFavoriteArticle }) => {
+export const ArticleDitails = ({
+  id,
+  isLoggedIn,
+  deleteArticle,
+  onEditArticle,
+  onFavoriteArticle,
+}) => {
   const [article, setCurrentArticle] = useState({});
   const [userData, setUserData] = useState({});
   const history = useHistory();
 
-  const token = localStorage.getItem('token');
-
   const [loading, setIsLoading] = useState(true);
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([api.getAnArticle(id), api.checkIsLoggedInUser(token)]).then((res) => {
-      const article = res.find((item) => item['article']);
-      const user = res.find((item) => item['user']);
-      setCurrentArticle(article.article);
-      setUserData(user);
-      setIsLoading(false);
-    });
+    if (!isLoggedIn) {
+      api.getAnArticle(id).then((res) => {
+        setCurrentArticle(res.article);
+        setIsLoading(false);
+      });
+    } else {
+      Promise.all([api.getAnArticle(id), api.checkIsLoggedInUser()]).then((res) => {
+        const article = res.find((item) => item['article']);
+        const user = res.find((item) => item['user']);
+        setCurrentArticle(article.article);
+        setUserData(user);
+        setIsLoading(false);
+      });
+    }
   }, [id]);
   if (loading) return <Spinner />;
 

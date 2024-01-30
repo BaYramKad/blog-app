@@ -32,21 +32,13 @@ const App = () => {
   const history = useHistory();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-
-    if (isLoggedIn) {
-      localStorage.setItem('token', userData.user.token);
-    } else if (token) {
-      setLoading(true);
-      api.checkIsLoggedInUser(token).then((res) => {
-        setIsLoggedIn(true);
-        setUserData(res);
-        setLoading(false);
-      });
-    } else {
-      history.push('/articles/');
-    }
-  }, [isLoggedIn]);
+    setLoading(true);
+    api.checkIsLoggedInUser().then((res) => {
+      setIsLoggedIn(true);
+      setUserData(res);
+      setLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -74,18 +66,18 @@ const App = () => {
   const onFavoriteArticle = (favorited, slug) => {
     const token = localStorage.getItem('token');
     if (favorited) {
-      api.updateAnArticleForFavorite(slug, token).then((res) => {
+      api.unFavoriteAnArticle(slug).then((res) => {
         const favArticle = chengeArticles(res);
         setArticles(favArticle);
         const res2 = { ...res };
-        api.updateAnArticleForFavorite(slug, token, res2);
+        api.updateAnArticleForFavorite(slug, res2);
       });
     } else {
       api.favoriteAnArticle(slug, token).then((res) => {
         const favArticle = chengeArticles(res);
         setArticles(favArticle);
         const res2 = { ...res };
-        api.updateAnArticleForFavorite(slug, token, res2);
+        api.updateAnArticleForFavorite(slug, res2);
       });
     }
   };
@@ -140,6 +132,7 @@ const App = () => {
             deleteArticle={deleteArticle}
             onEditArticle={onEditArticle}
             onFavoriteArticle={onFavoriteArticle}
+            isLoggedIn={isLoggedIn}
           />
         )}
       />

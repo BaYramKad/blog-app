@@ -63,7 +63,7 @@ const SignUp = () => {
           <input
             id="username"
             placeholder="Username"
-            className={!isValid && errors?.username?.message && styles.not_valid}
+            className={(!isValid && errors?.username?.message && styles.not_valid) || ''}
             {...register('username', {
               required: 'Поле обязательно к заполнению',
               minLength: {
@@ -87,7 +87,7 @@ const SignUp = () => {
             id="email"
             type="email"
             placeholder="Email"
-            className={!isValid && errors?.email?.message && styles.not_valid}
+            className={(!isValid && errors?.email?.message && styles.not_valid) || ''}
             {...register('email', {
               required: 'Поле обязательно к заполнению',
               pattern:

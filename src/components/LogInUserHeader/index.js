@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import avatarDefault from '../../assets/images/profile_img.png';
 import { Button } from 'antd';
 
 import styles from '../Header/Header.module.scss';
 
 export const LoginUserHeader = ({ userData = {}, onLogOut }) => {
-  const history = useHistory();
-
   const onLogOutUserHandle = () => {
     localStorage.removeItem('token');
-    onLogOut(false);
-    history.push('/articles/');
+    onLogOut(true);
   };
 
   const imgUrl = !userData.user?.image ? avatarDefault : userData.user?.image;
@@ -28,7 +25,7 @@ export const LoginUserHeader = ({ userData = {}, onLogOut }) => {
           <img className={styles.article_avatar} src={imgUrl} />
         </Link>
       </div>
-      <Link to="/log-out" onClick={onLogOutUserHandle}>
+      <Link to="/articles" onClick={onLogOutUserHandle}>
         <Button className={styles.sign_up_button}>Log Out</Button>
       </Link>
     </div>
