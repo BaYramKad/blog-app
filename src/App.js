@@ -107,13 +107,13 @@ const App = () => {
     history.push(`/articles/${slug}/edit`);
   };
 
+  const logOut = (isLogOut) => {
+    setIsLoggedIn(isLogOut);
+    setUserData(null);
+  };
   return (
     <div className="app">
-      <Header
-        userData={userData}
-        isLoggedIn={isLoggedIn}
-        onLogOutUser={(isLogOut) => setIsLoggedIn(isLogOut)}
-      />
+      <Header userData={userData} isLoggedIn={isLoggedIn} onLogOutUser={logOut} />
 
       <Route path="/" exact render={() => <div className="articles">{articlesReady}</div>} />
       <Route
