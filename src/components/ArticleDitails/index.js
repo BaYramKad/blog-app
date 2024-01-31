@@ -18,6 +18,7 @@ export const ArticleDitails = ({
   deleteArticle,
   onEditArticle,
   onFavoriteArticle,
+  catchError,
 }) => {
   const [article, setCurrentArticle] = useState({});
   const [userData, setUserData] = useState({});
@@ -26,11 +27,18 @@ export const ArticleDitails = ({
   const [loading, setIsLoading] = useState(true);
   useEffect(() => {
     setIsLoading(true);
+
     if (!isLoggedIn) {
-      api.getAnArticle(id).then((res) => {
-        setCurrentArticle(res.article);
-        setIsLoading(false);
-      });
+      console.log('all');
+      api
+        .getAnArticle(id)
+        .then((res) => {
+          setCurrentArticle(res.article);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          catchError(error);
+        });
     } else {
       Promise.all([api.getAnArticle(id), api.checkIsLoggedInUser()]).then((res) => {
         const article = res.find((item) => item['article']);
