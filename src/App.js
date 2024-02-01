@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 
-import { Route, useRouteMatch, useHistory, Switch } from 'react-router-dom';
-import { Header } from './components/Header';
+import { Route, useRouteMatch, Switch } from 'react-router-dom';
 
 import { ArticlesApi } from './api/articlesApi';
 
 import { PaginationBlock } from './components/Pagination';
-import { ArticleDitails } from './components/ArticleDitails';
-import { CreateArticle } from './components/CreateArticle';
 import { Spinner } from './assets/Spinner';
 
-import SignUp from './components/SignUp';
-import SignIn from './components/SignIn';
-import EditProfile from './components/EditProfile';
-import Articles from './components/Articles';
-import { NotFound } from './components/NotFound';
+const ArticleDitails = lazy(() => import('./components/ArticleDitails'));
+const CreateArticle = lazy(() => import('./components/CreateArticle'));
+const SignUp = lazy(() => import('./components/SignIn'));
+const SignIn = lazy(() => import('./components/SignIn'));
+const EditProfile = lazy(() => import('./components/EditProfile'));
+const Articles = lazy(() => import('./components/Articles'));
+const Header = lazy(() => import('./components/Header'));
+const NotFound = lazy(() => import('./components/NotFound'));
 
 const api = new ArticlesApi();
 
 const App = () => {
-  const [atricles, setArticles] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [page, setPage] = useState(0);
   const [articlesCount, setArticlesCount] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,6 @@ const App = () => {
   const routeMath = useRouteMatch('/articles/:id');
   const routeMathArticles = useRouteMatch('/articles/');
   const routeMathMain = useRouteMatch('/');
-  const history = useHistory();
 
   useEffect(() => {
     setLoading(true);
@@ -51,46 +50,6 @@ const App = () => {
     });
   }, [page]);
 
-  const chengeArticles = (response) => {
-    return atricles.map((item) => {
-      if (response.article.slug === item.slug) {
-        return {
-          ...item,
-          favorited: response.article.favorited,
-          favoritesCount: response.article.favoritesCount,
-        };
-      } else {
-        return item;
-      }
-    });
-  };
-
-  const onFavoriteArticle = (favorited, slug) => {
-    if (favorited) {
-      api.unFavoriteAnArticle(slug).then((res) => {
-        const favArticle = chengeArticles(res);
-        setArticles(favArticle);
-        const res2 = { ...res };
-        api.updateAnArticleForFavorite(slug, res2);
-      });
-    } else {
-      api.favoriteAnArticle(slug).then((res) => {
-        const favArticle = chengeArticles(res);
-        setArticles(favArticle);
-        const res2 = { ...res };
-        api.updateAnArticleForFavorite(slug, res2);
-      });
-    }
-  };
-
-  const onSetNewUserData = (data) => setUserData(data);
-
-  const articlesReady = loading ? (
-    <Spinner />
-  ) : (
-    <Articles aticles={atricles} onFavoriteArticle={onFavoriteArticle} />
-  );
-
   const setNewArticle = (newArticle) => {
     const obj = newArticle.article;
     setArticles((prev) => {
@@ -98,73 +57,121 @@ const App = () => {
     });
   };
 
-  const deleteArticle = (slug) => {
-    const deleteFilterArticle = atricles.filter((item) => item.slug !== slug);
-    setArticles(deleteFilterArticle);
-  };
-
-  const onEditArticle = (slug) => {
-    setEditedArtile(true);
-    history.push(`/articles/${slug}/edit`);
-  };
-
   const logOut = (isLogOut) => {
     setIsLoggedIn(isLogOut);
     setUserData(null);
   };
-  const logIn = (useData) => setUserData(useData);
-  const onLoggedIn = (isLogged) => setIsLoggedIn(isLogged);
 
   const catchError = (error) => {
     setError(error);
     setLoading(false);
   };
+
+  const articlesReady = loading ? (
+    <Spinner />
+  ) : (
+    <Suspense fallback={<Spinner />}>
+      <Articles
+        articles={articles}
+        onFavoriteArticleFunc={(favArticles) => setArticles(favArticles)}
+      />
+    </Suspense>
+  );
   return (
     <div className="app">
-      <Header userData={userData} isLoggedIn={isLoggedIn} onLogOutUser={logOut} />
+      <Suspense fallback={<Spinner />}>
+        <Header userData={userData} onLogOutUser={logOut} />
+      </Suspense>
 
       <Switch>
         <Route path="/" exact render={() => <div className="articles">{articlesReady}</div>} />
         <Route
           path="/articles/"
           exact
-          render={() => <div className="articles">{articlesReady}</div>}
+          render={() => {
+            return (
+              <Suspense fallback={<Spinner />}>
+                <div className="articles">{articlesReady}</div>
+              </Suspense>
+            );
+          }}
         />
         <Route
           path="/articles/:id"
           exact
           render={() => (
-            <ArticleDitails
-              id={routeMath?.params.id}
-              deleteArticle={deleteArticle}
-              onEditArticle={onEditArticle}
-              onFavoriteArticle={onFavoriteArticle}
-              isLoggedIn={isLoggedIn}
-              catchError={catchError}
-            />
+            <Suspense fallback={<Spinner />}>
+              <ArticleDitails
+                id={routeMath?.params.id}
+                onDeleteArticle={(newArticles) => setArticles(newArticles)}
+                onEditArticle={(isEdit) => setEditedArtile(isEdit)}
+                isLoggedIn={isLoggedIn}
+                catchError={catchError}
+                articles={articles}
+                onFavoriteArticleFunc={(favArticles) => setArticles(favArticles)}
+              />
+            </Suspense>
           )}
         />
-        <Route path="/sign-up" render={() => <SignUp />} />
+        <Route
+          path="/sign-up"
+          render={() => (
+            <Suspense fallback={<Spinner />}>
+              {' '}
+              <SignUp />
+            </Suspense>
+          )}
+        />
         <Route
           path="/sign-in"
-          render={() => <SignIn onUserData={logIn} onLoggedIn={onLoggedIn} />}
+          render={() => (
+            <Suspense fallback={<Spinner />}>
+              {' '}
+              <SignIn
+                onUserData={(useData) => setUserData(useData)}
+                onLoggedIn={(isLogged) => setIsLoggedIn(isLogged)}
+              />
+            </Suspense>
+          )}
         />
 
         <Route
           path="/profile"
           render={() => (
-            <EditProfile dataUserUpdate={userData} onSetNewUserData={onSetNewUserData} />
+            <Suspense fallback={<Spinner />}>
+              <EditProfile
+                dataUserUpdate={userData}
+                onSetNewUserData={(data) => setUserData(data)}
+              />
+            </Suspense>
           )}
         />
-        <Route path="/new-article" render={() => <CreateArticle setNewArticle={setNewArticle} />} />
+        <Route
+          path="/new-article"
+          exact
+          render={() => (
+            <Suspense fallback={<Spinner />}>
+              <CreateArticle setNewArticle={setNewArticle} />
+            </Suspense>
+          )}
+        />
         <Route
           path="/articles/:id/edit"
           exact
           render={() => (
-            <CreateArticle editedArticle={editedArticle} setNewArticle={setNewArticle} />
+            <Suspense fallback={<Spinner />}>
+              <CreateArticle editedArticle={editedArticle} setNewArticle={setNewArticle} />
+            </Suspense>
           )}
         />
-        <Route path="*" render={() => <NotFound errors={errors} />} />
+        <Route
+          path="*"
+          render={() => (
+            <Suspense fallback={<Spinner />}>
+              <NotFound errors={errors} />
+            </Suspense>
+          )}
+        />
       </Switch>
 
       {(routeMathArticles?.isExact || routeMathMain?.isExact) && !loading && (

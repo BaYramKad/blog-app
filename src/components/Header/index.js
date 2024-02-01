@@ -5,7 +5,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { LoginUserHeader } from '../LogInUserHeader';
 import { getToken } from '../../api/api';
 
-export function Header({ isLoggedIn, userData, onLogOutUser }) {
+const Header = ({ userData, onLogOutUser }) => {
   const isAuth = getToken();
   return (
     <div className={styles.header}>
@@ -29,4 +29,6 @@ export function Header({ isLoggedIn, userData, onLogOutUser }) {
       )}
     </div>
   );
-}
+};
+
+export default Header;

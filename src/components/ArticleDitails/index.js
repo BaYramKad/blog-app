@@ -12,24 +12,35 @@ import { useHistory } from 'react-router-dom';
 
 const api = new ArticlesApi();
 
-export const ArticleDitails = ({
+const ArticleDitails = ({
   id,
   isLoggedIn,
-  deleteArticle,
+  articles,
+  onDeleteArticle,
   onEditArticle,
-  onFavoriteArticle,
+  onFavoriteArticleFunc,
   catchError,
 }) => {
   const [article, setCurrentArticle] = useState({});
   const [userData, setUserData] = useState({});
+  const [loading, setIsLoading] = useState(true);
+
   const history = useHistory();
 
-  const [loading, setIsLoading] = useState(true);
+  const deleteArticle = (slug) => {
+    const deleteFilterArticle = articles.filter((item) => item.slug !== slug);
+    onDeleteArticle(deleteFilterArticle);
+  };
+
+  const editArticle = (slug) => {
+    onEditArticle(true);
+    history.push(`/articles/${slug}/edit`);
+  };
+
   useEffect(() => {
     setIsLoading(true);
 
     if (!isLoggedIn) {
-      console.log('all');
       api
         .getAnArticle(id)
         .then((res) => {
@@ -55,6 +66,38 @@ export const ArticleDitails = ({
   const tags = article.tagList
     .filter((item, i) => item.length && i < 10)
     .map((item) => <span key={idKey--}>{item}</span>);
+
+  const chengeArticles = (response) => {
+    return articles.map((item) => {
+      if (response.article.slug === item.slug) {
+        return {
+          ...item,
+          favorited: response.article.favorited,
+          favoritesCount: response.article.favoritesCount,
+        };
+      } else {
+        return item;
+      }
+    });
+  };
+
+  const onFavoriteArticle = (favorited, slug) => {
+    if (favorited) {
+      api.unFavoriteAnArticle(slug).then((res) => {
+        const favArticle = chengeArticles(res);
+        onFavoriteArticleFunc(favArticle);
+        const res2 = { ...res };
+        api.updateAnArticleForFavorite(slug, res2);
+      });
+    } else {
+      api.favoriteAnArticle(slug).then((res) => {
+        const favArticle = chengeArticles(res);
+        onFavoriteArticleFunc(favArticle);
+        const res2 = { ...res };
+        api.updateAnArticleForFavorite(slug, res2);
+      });
+    }
+  };
 
   const onFavorite = () => {
     if (userData?.user?.username) {
@@ -83,7 +126,7 @@ export const ArticleDitails = ({
         />
         {article.author.username === userData?.user?.username ? (
           <Buttons
-            onEditArticle={onEditArticle}
+            onEditArticle={editArticle}
             deleteArticle={deleteArticle}
             userData={userData}
             slug={article.slug}
@@ -96,3 +139,5 @@ export const ArticleDitails = ({
     </article>
   );
 };
+
+export default ArticleDitails;

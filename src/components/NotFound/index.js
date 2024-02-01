@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const NotFound = ({ errors }) => {
+const NotFound = ({ errors }) => {
   return (
     <div className="not_found">
       <h1>NotFound Page {errors}</h1>
@@ -8,3 +8,5 @@ export const NotFound = ({ errors }) => {
     </div>
   );
 };
+
+export default NotFound;
