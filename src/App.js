@@ -9,7 +9,7 @@ import { Spinner } from './assets/Spinner';
 
 const ArticleDitails = lazy(() => import('./components/ArticleDitails'));
 const CreateArticle = lazy(() => import('./components/CreateArticle'));
-const SignUp = lazy(() => import('./components/SignIn'));
+const SignUp = lazy(() => import('./components/SignUp'));
 const SignIn = lazy(() => import('./components/SignIn'));
 const EditProfile = lazy(() => import('./components/EditProfile'));
 const Articles = lazy(() => import('./components/Articles'));
@@ -115,18 +115,18 @@ const App = () => {
         />
         <Route
           path="/sign-up"
+          exact
           render={() => (
             <Suspense fallback={<Spinner />}>
-              {' '}
               <SignUp />
             </Suspense>
           )}
         />
         <Route
           path="/sign-in"
+          exact
           render={() => (
             <Suspense fallback={<Spinner />}>
-              {' '}
               <SignIn
                 onUserData={(useData) => setUserData(useData)}
                 onLoggedIn={(isLogged) => setIsLoggedIn(isLogged)}
